@@ -1,4 +1,4 @@
-## Dao Core
+## Time Series
 
 TimeSeries is a ruby Gem for OpenTSDB that provides a set of core tools for working with an OpenTSDB data store in ruby.
 
