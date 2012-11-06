@@ -8,7 +8,8 @@ Download the gem from our gem server and install it:
 
     gem install time_series
 
-Alternatively, build it from source and install it
+Alternatively, build it from source and install it:
+
     git clone git@github.va.opower.it:opower/time-series.git
     cd time-series
     gem build time_series.gemspec
