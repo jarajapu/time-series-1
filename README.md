@@ -10,9 +10,9 @@ Download the gem from our gem server and install it:
 
 Alternatively, build it from source and install it
     git clone git@github.va.opower.it:opower/time-series.git
-	cd time-series
-	gem build time_series.gemspec
-	install gem time_series-0.1.0.gem
+    cd time-series
+    gem build time_series.gemspec
+    install gem time_series-0.1.0.gem
 
 ### Usage
 
@@ -20,13 +20,13 @@ Alternatively, build it from source and install it
 
 To require access to a specific OpenTSDB data store:
 
-	require 'time_series/Put'
-	@my_tsdb = OPower::TimeSeries.new({:hostname => "opentsdb.va.opower.it", :port => 4242})
+    require 'time_series/Put'
+    @my_tsdb = OPower::TimeSeries.new({:hostname => "opentsdb.va.opower.it", :port => 4242})
 
 To write a specific metric (that has been registered already with OpenTSDB):
 
-	my_metric = { :metric => 'proc.stat.cpu', :value => 20, :timestamp => Time.now.to_i,
-	              :tags => {:host => 'mamamia.va.opower.it', :type => 'iowait'} }
+    my_metric = { :metric => 'proc.stat.cpu', :value => 20, :timestamp => Time.now.to_i,
+                  :tags => {:host => 'mamamia.va.opower.it', :type => 'iowait'} }
 
     @my_tsdb.put(my_metric)
 
