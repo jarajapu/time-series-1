@@ -62,9 +62,9 @@ To read metrics from the OpenTSDB data store in ascii format:
                                                     })
 
 To read metrics from the OpenTSDB data store in json format:
-     require 'time_series/json'
+     require 'time_series/Query'
 
-     values_in_ascii_array = OPower::TimeSeries.Query({:return => json,
+     values_in_json_array = OPower::TimeSeries.Query({:return => json,
                                                     :metrics =>
                                                     ["avg:1m-avg:rate:proc.stat.cpu{host=apsc001.va.opower.it,type=user}",
                                                      "max:5m-avg:rate:proc.stat.cpu{host=apsc001.va.opower.it,type=iowait}",
