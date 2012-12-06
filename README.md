@@ -1,6 +1,6 @@
 ## Time Series
 
-TimeSeries is a ruby Gem for OpenTSDB that provides a set of core tools for working with an OpenTSDB data store in ruby.
+TimeSeries is a ruby Gem (under development) for OpenTSDB that provides a set of core tools for working with an OpenTSDB data store in ruby.
 
 ### Installation
 
@@ -8,11 +8,12 @@ Download the gem from our gem server and install it:
 
     gem install time_series
 
-To build it from source, clone the repo and install it
+Alternatively, build it from source and install it:
+
     git clone git@github.va.opower.it:opower/time-series.git
-	cd time-series
-	gem build time_series.gemspec
-	install gem time_series-0.1.0.gem
+    cd time-series
+    gem build time_series.gemspec
+    install gem time_series-0.1.0.gem
 
 ### Usage
 
@@ -23,12 +24,15 @@ To require access to a specific OpenTSDB data store:
 	require 'time_series/Put'
 	@my_tsdb = OPower::TimeSeries::Dao.new({:hostname => "opentsdb.va.opower.it", :port => 4242})
 
+
 If no hostname and port are specified, this OPower gem defaults to opentsdb.va.opower.it:4242
+    require 'time_series/Put'
+    @my_tsdb = OPower::TimeSeries.new({:hostname => "opentsdb.va.opower.it", :port => 4242})
 
 To write a specific metric (that has been registered already with OpenTSDB):
 
-	my_metric = { :metric => 'proc.stat.cpu', :value => 20, :timestamp => Time.now.to_i,
-	              :tags => {:host => 'mamamia.va.opower.it', :type => 'iowait'} }
+    my_metric = { :metric => 'proc.stat.cpu', :value => 20, :timestamp => Time.now.to_i,
+                  :tags => {:host => 'mamamia.va.opower.it', :type => 'iowait'} }
 
     @my_tsdb.put(my_metric)
 
@@ -64,9 +68,9 @@ To read metrics from the OpenTSDB data store in ascii format:
                                                     })
 
 To read metrics from the OpenTSDB data store in json format:
-     require 'time_series/json'
+     require 'time_series/Query'
 
-     values_in_ascii_array = OPower::TimeSeries::Query.new({:return => json,
+     values_in_json_array = OPower::TimeSeries.Query({:return => json,
                                                     :metrics =>
                                                     ["avg:1m-avg:rate:proc.stat.cpu{host=apsc001.va.opower.it,type=user}",
                                                      "max:5m-avg:rate:proc.stat.cpu{host=apsc001.va.opower.it,type=iowait}",

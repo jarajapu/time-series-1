@@ -1,0 +1,8 @@
+*.gem
+*.json
+*.csv
+*.log
+.rvmrc
+.bundle
+Gemfile.lock
+.idea/
