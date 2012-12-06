@@ -8,7 +8,7 @@ Download the gem from our gem server and install it:
 
     gem install time_series
 
-Alternatively, build it from source and install it
+To build it from source, clone the repo and install it
     git clone git@github.va.opower.it:opower/time-series.git
 	cd time-series
 	gem build time_series.gemspec
@@ -21,7 +21,9 @@ Alternatively, build it from source and install it
 To require access to a specific OpenTSDB data store:
 
 	require 'time_series/Put'
-	@my_tsdb = OPower::TimeSeries.new({:hostname => "opentsdb.va.opower.it", :port => 4242})
+	@my_tsdb = OPower::TimeSeries::Dao.new({:hostname => "opentsdb.va.opower.it", :port => 4242})
+
+If no hostname and port are specified, this OPower gem defaults to opentsdb.va.opower.it:4242
 
 To write a specific metric (that has been registered already with OpenTSDB):
 
@@ -30,18 +32,19 @@ To write a specific metric (that has been registered already with OpenTSDB):
 
     @my_tsdb.put(my_metric)
 
+
 #### Reading from OpenTSDB
 
 
 To spit out link to a GnuPlot chart (the default UI for OpenTSDB 1.1 or prior) in string format:
      require 'time_series/Query'
 
-     link_to_chart = OPower::TimeSeries.Query({:hosts => "apsc001,apsc002",
+     link_to_chart = OPower::TimeSeries::Query.new({:hosts => "apsc001,apsc002",
                                                :nicknamed_metrics => "cpu.iowait,rpts_sec,cpu.user"})
 
 If you do not plan to use the nicknames feature for metrics, you can directly send the metrics list in an array using:
 
-     link_to_chart = OPower::TimeSeries.Query({:metrics =>
+     link_to_chart = OPower::TimeSeries::Query.new({:metrics =>
                                                ["avg:1m-avg:rate:proc.stat.cpu{host=apsc001.va.opower.it,type=user}",
                                                 "max:5m-avg:rate:proc.stat.cpu{host=apsc001.va.opower.it,type=iowait}",
                                                 "sum:rate:iostat.disk.msec_total{host=#{host}.va.opower.it}",
@@ -52,7 +55,7 @@ If you do not plan to use the nicknames feature for metrics, you can directly se
 To read metrics from the OpenTSDB data store in ascii format:
      require 'time_series/Query'
 
-     values_in_ascii_array = OPower::TimeSeries.Query({:return => ascii,
+     values_in_ascii_array = OPower::TimeSeries::Query.new({:return => ascii,
                                                :metrics =>
                                                ["avg:1m-avg:rate:proc.stat.cpu{host=apsc001.va.opower.it,type=user}",
                                                 "max:5m-avg:rate:proc.stat.cpu{host=apsc001.va.opower.it,type=iowait}",
@@ -63,7 +66,7 @@ To read metrics from the OpenTSDB data store in ascii format:
 To read metrics from the OpenTSDB data store in json format:
      require 'time_series/json'
 
-     values_in_ascii_array = OPower::TimeSeries.Query({:return => json,
+     values_in_ascii_array = OPower::TimeSeries::Query.new({:return => json,
                                                     :metrics =>
                                                     ["avg:1m-avg:rate:proc.stat.cpu{host=apsc001.va.opower.it,type=user}",
                                                      "max:5m-avg:rate:proc.stat.cpu{host=apsc001.va.opower.it,type=iowait}",

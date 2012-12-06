@@ -2,7 +2,7 @@
 require 'yaml'
 
 module OPOWER
-  module time_series
+  module TimeSeries
   # Configuration defaults
   @config = {
     :log_level => "verbose",
