@@ -1,6 +1,6 @@
 ## Time Series
 
-TimeSeries is a ruby Gem (under development) for OpenTSDB that provides a set of core tools for working with an OpenTSDB data store in ruby.
+TimeSeries is a ruby Gem for OpenTSDB that provides a set of core tools for working with an OpenTSDB data store in ruby.
 
 ### Installation
 
@@ -17,66 +17,112 @@ Alternatively, build it from source and install it:
 
 ### Usage
 
+#### Search for a registered metric 
+
+To find whether a specified metric or tag:
+
+        my_tsdb = OPOWER::TimeSeries::Suggest.new('opentsdb.va.opower.it', 4242)
+
+To find a metric:
+
+        my_tsdb.run_suggest('proc.stat.cpu')
+
+To find a tag key:
+
+        my_tsdb.run_suggest('proc.stat.cpu', 'tagk')
+
+To find a tag value:
+
+        my_tsdb.run_suggest('proc.stat.cpu', 'tagv')
+
 #### Writing to OpenTSDB
 
 To require access to a specific OpenTSDB data store:
 
-	require 'time_series/Put'
-	@my_tsdb = OPower::TimeSeries::Dao.new({:hostname => "opentsdb.va.opower.it", :port => 4242})
+        my_tsdb = OPOWER::TimeSeries::Save.new('opentsdb.va.opower.it', 4242)
 
-
-If no hostname and port are specified, this OPower gem defaults to opentsdb.va.opower.it:4242
-    require 'time_series/Put'
-    @my_tsdb = OPower::TimeSeries.new({:hostname => "opentsdb.va.opower.it", :port => 4242})
+If no hostname and port are specified, this OPower gem defaults to 127.0.0.1:4242
 
 To write a specific metric (that has been registered already with OpenTSDB):
 
-    my_metric = { :metric => 'proc.stat.cpu', :value => 20, :timestamp => Time.now.to_i,
-                  :tags => {:host => 'mamamia.va.opower.it', :type => 'iowait'} }
+Required: metric and value
+Optional: no_dup_allow - default to false
 
-    @my_tsdb.put(my_metric)
+    options = {:metric => 'proc.stat.cpu',
+               :timestamp => Time.now.to_i,
+               :value => 10,
+               :tags => {:host => 'something.va.opower.it', :type => 'iowait'},
+               :no_dup_allow => true
+              }
+
+    my_tsdb.put(options)
 
 
 #### Reading from OpenTSDB
 
+     require 'time_series/Search'
+     my_tsdb = OPOWER::TimeSeries::Search.new('opentsdb.va.opower.it', 4242)
+
+     # Params (See http://opentsdb.net/http-api.html#/q_Parameters for more information):
+     #
+     #
+     # options a hash which may include the following keys:
+     #
+     # * format (one of json, ascii, png), defaults to json.
+     # * start   The query's start date. (required)
+     # * end     The query's end date.
+     # * m       The query itself. (required, must be an array)
+     #           This is a JSON object contains aggregator, metrics and tags
+     # * o       Rendering options.
+     # * wxh     The dimensions of the graph.
+     # * yrange  The range of the left Y axis.
+     # * y2range The range of the right Y axis.
+     # * ylabel  Label for the left Y axis.
+     # * y2label Label for the right Y axis.
+     # * yformat Format string for the left Y axis.
+     # * y2formatFormat string for the right Y axis.
+     # * ylog    Enables log scale for the left Y axis.
+     # * y2log   Enables log scale for the right Y axis.
+     # * key     Options for the key (legend) of the graph.
+     # * nokey   Removes the key (legend) from the graph.
+     # * nocache Forces TSD to ignore cache and fetch results from HBase.
 
 To spit out link to a GnuPlot chart (the default UI for OpenTSDB 1.1 or prior) in string format:
-     require 'time_series/Query'
 
-     link_to_chart = OPower::TimeSeries::Query.new({:hosts => "apsc001,apsc002",
-                                               :nicknamed_metrics => "cpu.iowait,rpts_sec,cpu.user"})
+     options = {
+                :format => :png,
+                :start => '2013-01-01 01:00:00'
+                :end => '2013-02-01 01:00:00',
+                :m => [{ :aggregator => 'sum', :metric => 'proc.stat.cpu', :tags => {:type => 'iowait', :version => 2.1} }],
+                :nocache => true
+               }
 
-If you do not plan to use the nicknames feature for metrics, you can directly send the metrics list in an array using:
-
-     link_to_chart = OPower::TimeSeries::Query.new({:metrics =>
-                                               ["avg:1m-avg:rate:proc.stat.cpu{host=apsc001.va.opower.it,type=user}",
-                                                "max:5m-avg:rate:proc.stat.cpu{host=apsc001.va.opower.it,type=iowait}",
-                                                "sum:rate:iostat.disk.msec_total{host=#{host}.va.opower.it}",
-                                                "min:proc.loadavg.1min{host=apsc001.va.opower.it}"]
-                                               })
+     my_tsdb.query(options)
 
 
 To read metrics from the OpenTSDB data store in ascii format:
-     require 'time_series/Query'
 
-     values_in_ascii_array = OPower::TimeSeries::Query.new({:return => ascii,
-                                               :metrics =>
-                                               ["avg:1m-avg:rate:proc.stat.cpu{host=apsc001.va.opower.it,type=user}",
-                                                "max:5m-avg:rate:proc.stat.cpu{host=apsc001.va.opower.it,type=iowait}",
-                                                "sum:rate:iostat.disk.msec_total{host=#{host}.va.opower.it}",
-                                                "min:proc.loadavg.1min{host=apsc001.va.opower.it}"]
-                                                    })
+     options = {
+                :format => :ascii,
+                :start => 14535353
+                :end => 16786786,
+                :m => [{ :aggregator => 'sum', :metric => 'proc.stat.cpu', :tags => {:type => 'iowait', :version => 2.1} }]
+               }
+
+     my_tsdb.query(options)
+
 
 To read metrics from the OpenTSDB data store in json format:
-     require 'time_series/Query'
 
-     values_in_json_array = OPower::TimeSeries.Query({:return => json,
-                                                    :metrics =>
-                                                    ["avg:1m-avg:rate:proc.stat.cpu{host=apsc001.va.opower.it,type=user}",
-                                                     "max:5m-avg:rate:proc.stat.cpu{host=apsc001.va.opower.it,type=iowait}",
-                                                     "sum:rate:iostat.disk.msec_total{host=#{host}.va.opower.it}",
-                                                     "min:proc.loadavg.1min{host=apsc001.va.opower.it}"]
-                                                         })
+     options = {
+                :format => :json,
+                :start => '3m-ago'
+                :m => [{ :aggregator => 'max', :metric => 'proc.stat.cpu', :tags => {:type => 'iowait', :version => 2.1} }],
+                :nocache => true
+               }
+
+     my_tsdb.query(options)
+
 
 
 #### Testing time_series ( ruby gem for reading and writing OpenTSDB )
