@@ -1,7 +1,5 @@
-require "time_series/version"
-require "time_series/suggest"
-require "time_series/search"
-require "time_series/save"
-require "time_series/response"
-require "time_series/parse_opts"
+require 'time_series/ts_client'
+require 'time_series/metric'
+require 'time_series/query'
+require 'time_series/version'
 

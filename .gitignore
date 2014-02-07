@@ -4,5 +4,11 @@
 *.log
 .rvmrc
 .bundle
+bin/
+.DS_Store
+.yardoc/
 Gemfile.lock
 .idea/
+vendor/
+metrics/
+doc/
