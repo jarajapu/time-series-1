@@ -11,11 +11,15 @@ module Opower
       # @param [Hash] config The configuration for this query.
       # @option config [String] :format The format to return data with. Defaults to 'json'.
       # @option config [String, Integer, DateTime] :start The start time. Required field.
-      # @option config [String, Integer, DateTime] :end The start time. Required field.
+      # @option config [String, Integer, DateTime] :end The end time. Optional field.
       # @option config [Hash] :m Array of metric hashes.
-      # @option m [String] :aggregator The aggregation type to utilize. Required.
-      # @option m [String] :metric The metric name. Required.
-      # @option m [Hash] :tags Hash consisting of Tag Key / Tag Value pairs. Optional.
+      #  * :aggregator [String] The aggregation type to utilize. Required.
+      #  * :metric [String] The metric name. Required.
+      #  * :tags [Hash] Hash consisting of Tag Key / Tag Value pairs. Optional.
+      #  * :down_sample [Hash] to specify downsampling period and function
+      #    * :period [String] The period of time to downsample one
+      #    * :function [String] The function [min, max, sum, avg, dev]
+      # @option config [Boolean] padding If set to true, OpenTSDB (>= 2.0) will pad the start/end period.
       #
       # This object also supports all of the options available to the REST API for OpenTSDB.
       # See http://opentsdb.net/http-api.html#/q_Parameters for more information.
@@ -31,8 +35,11 @@ module Opower
         # Create 'm' string
         @metrics.each do |m|
           tag_params = []
+          ds = m[:downsample]
           m[:tags].each { |k, v| tag_params << "#{k}=#{v}" } unless m[:tags].nil?
-          metric_arr << m[:aggregator] + ':' + m[:name] + '{' + tag_params.join(',') + '}'
+          metric_arr << m[:aggregator] + ':'
+          metric_arr << ds[:period] + '-' + ds[:function] + ':' unless ds.nil?
+          metric_arr << m[:name] + '{' + tag_params.join(',') + '}'
         end
 
         @config[:m] = metric_arr
