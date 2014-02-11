@@ -34,12 +34,14 @@ module Opower
 
         # Create 'm' string
         @metrics.each do |m|
+          str = ''
           tag_params = []
           ds = m[:downsample]
           m[:tags].each { |k, v| tag_params << "#{k}=#{v}" } unless m[:tags].nil?
-          metric_arr << m[:aggregator] + ':'
-          metric_arr << ds[:period] + '-' + ds[:function] + ':' unless ds.nil?
-          metric_arr << m[:name] + '{' + tag_params.join(',') + '}'
+          str << m[:aggregator] + ':'
+          str << ds[:period] + '-' + ds[:function] + ':' unless ds.nil?
+          str << m[:name] + '{' + tag_params.join(',') + '}'
+          metric_arr << str
         end
 
         @config[:m] = metric_arr

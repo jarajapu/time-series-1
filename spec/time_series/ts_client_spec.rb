@@ -76,15 +76,16 @@ describe Opower::TimeSeries::TSClient do
     it 'should raise an error for a bad tagk name ' do
       metrics = subject.suggest('sys')
       m = [{ :aggregator => 'sum', :name => metrics[0], :tags => {:bad_tagk => 'apsc001.va.opower.it'}}]
-      config = { :format => :ascii, :start => 1, :end => 2, :m => m }
+      config = { :format => :ascii, :start => 123456, :end => 134567, :m => m }
       @query = Opower::TimeSeries::Query.new(config)
       expect { subject.run_query(@query) }.to raise_error(ArgumentError, 'Tag Key bad_tagk is not registered, check again.')
     end
 
     it 'should return a blank string for a query with no expected results' do
       metrics = subject.suggest('sys')
+      metrics.should_not be_nil
       m = [{ :aggregator => 'sum', :name => metrics[0]}]
-      config = { :format => :ascii, :start => 1, :end => 2, :m => m }
+      config = { :format => :ascii, :start => 123456, :end => 134567, :m => m }
       @query = Opower::TimeSeries::Query.new(config)
       results = subject.run_query(@query)
       results.should be_nil
@@ -97,6 +98,8 @@ describe Opower::TimeSeries::TSClient do
       @query = Opower::TimeSeries::Query.new(config)
       results = subject.run_query(@query)
       results.should_not eq('')
+      results.should match /#{metrics[0]}/
+      results.should_not include('Internal Server Error')
     end
 
     it 'should return data for a query in JSON format' do
@@ -106,6 +109,9 @@ describe Opower::TimeSeries::TSClient do
       @query = Opower::TimeSeries::Query.new(config)
       results = subject.run_query(@query)
       results.should_not eq('')
+      results.length.should > 0
+      results[0]['metric'].should eq(metrics[0])
+      results.should_not include('Internal Server Error')
     end
 
     it 'should return a URL for a query in PNG format' do
@@ -115,8 +121,8 @@ describe Opower::TimeSeries::TSClient do
       @query = Opower::TimeSeries::Query.new(config)
       results = subject.run_query(@query)
       results.should_not eq('')
+      results.should_not include('Internal Server Error')
     end
   end
 
 end
-
