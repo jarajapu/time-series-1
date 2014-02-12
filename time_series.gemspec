@@ -19,9 +19,9 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency 'rspec', '~> 2.14.1'
   s.add_development_dependency 'mocha', '= 0.10.4'
-  s.add_development_dependency 'httparty', '= 0.11.0'
   s.add_development_dependency 'simplecov', '= 0.8.2'
   s.add_development_dependency 'yard'
   s.add_development_dependency 'redcarpet'
   s.add_dependency 'rake'
+  s.add_dependency 'httparty'
 end

@@ -22,7 +22,7 @@ Alternatively, build it from source and install it:
 First, initialize a connection to an OpenTSDB instance:
 
 ```ruby
-client = OPOWER::TimeSeries::TSDBClient.new('opentsdb.va.opower.it', 4242)
+client = Opower::TimeSeries::TSClient.new('opentsdb.va.opower.it', 4242)
 ```
 
 To find suggestions for a metric, tag key, or tag value:
@@ -38,7 +38,7 @@ client.suggest('proc.stat.cpu', 'tagv') # suggest a tagv
 First, initialize a connection to an OpenTSDB instance:
 
 ```ruby
-client = OPOWER::TimeSeries::TSDBClient.new('opentsdb.va.opower.it', 4242)
+client = Opower::TimeSeries::TSClient.new('opentsdb.va.opower.it', 4242)
 ```
 
 If no hostname and port are specified, this gem defaults to 127.0.0.1:4242
@@ -54,7 +54,7 @@ cfg = {
         :no_duplicates? => true
 }
 
-metric = OPOWER::TimeSeries::Metric(cfg)
+metric = Opower::TimeSeries::Metric(cfg)
 client.write(metric)
 ```
 
@@ -64,7 +64,7 @@ client.write(metric)
 First, initialize a connection to an OpenTSDB instance:
 
 ```ruby
-client = OPOWER::TimeSeries::TSDBClient.new('opentsdb.va.opower.it', 4242)
+client = Opower::TimeSeries::TSClient.new('opentsdb.va.opower.it', 4242)
 ```
 
 Then, you can create a query object to run against the specified client:
