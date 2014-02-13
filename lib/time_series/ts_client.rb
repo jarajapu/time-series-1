@@ -114,6 +114,7 @@ module Opower
       # @return [Object] JSON representation.
       def parse_json (data)
         data_arr = []
+        return data_arr if data.nil?
 
         data.split("\n").each do |line|
           h = {}
