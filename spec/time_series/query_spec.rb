@@ -3,7 +3,7 @@ require 'spec_helper'
 
 describe Opower::TimeSeries::Query do
   it 'should throw an error on trying to create an query without a start parameter' do
-    m = [{ :aggregator => 'sum', :name => 'mtest'}]
+    m = [{ :aggregator => 'sum', :metric => 'mtest'}]
     config = { :format => :ascii, :end => 134567, :m => m }
     expect { Opower::TimeSeries::Query.new(config) }.to raise_error(ArgumentError, 'start is a required parameter.')
   end
@@ -28,8 +28,18 @@ describe Opower::TimeSeries::Query do
     expect { Opower::TimeSeries::Query.new(config) }.to raise_error(ArgumentError, 'Aggregator and metric label must be present for query to run.')
   end
 
+  it 'should throw an error on trying to create an query when missing aggregator label' do
+    config = { :format => :ascii, :start => 123456, :end => 134567, :m => [{:metric => 'sum'}] }
+    expect { Opower::TimeSeries::Query.new(config) }.to raise_error(ArgumentError, 'Aggregator and metric label must be present for query to run.')
+  end
+
+  it 'should throw an error on trying to create an query when missing metric label' do
+    config = { :format => :ascii, :start => 123456, :end => 134567, :m => [{:aggregator => 'sum'}] }
+    expect { Opower::TimeSeries::Query.new(config) }.to raise_error(ArgumentError, 'Aggregator and metric label must be present for query to run.')
+  end
+
   it 'should be able to query for a metric from a host in ASCII format' do
-    m = [{ :aggregator => 'sum', :name => 'mtest'}]
+    m = [{ :aggregator => 'sum', :metric => 'mtest'}]
     config = { :format => :ascii, :start => 123456, :end => 134567, :m => m }
     query = Opower::TimeSeries::Query.new(config)
     query.config.should eq(config)

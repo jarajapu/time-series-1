@@ -47,14 +47,13 @@ To insert a metric into OpenTSDB, create a new `Metric` object:
 
 ```ruby
 cfg = {
-        :metric => 'proc.stat.cpu',
+        :name => 'proc.stat.cpu',
         :timestamp => Time.now.to_i,
         :value => 10,
-        :tags => {:host => 'something.va.opower.it', :type => 'iowait'},
-        :no_duplicates? => true
+        :tags => {:host => 'something.va.opower.it', :type => 'iowait'}
 }
 
-metric = Opower::TimeSeries::Metric(cfg)
+metric = Opower::TimeSeries::Metric.new(cfg)
 client.write(metric)
 ```
 
@@ -72,8 +71,8 @@ Then, you can create a query object to run against the specified client:
 ```ruby
 cfg = {
         :format => :png,
-        :start => '2013-01-01 01:00:00'
-        :end => '2013-02-01 01:00:00',
+        :start => '2013/01/01/-01:00:00'
+        :end => '2013/02/01-01:00:00',
         :m => [{ :aggregator => 'sum', :metric => 'proc.stat.cpu', :tags => {:type => 'iowait', :version => 2.1} }],
         :nocache => true
 }

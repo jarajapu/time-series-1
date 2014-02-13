@@ -11,7 +11,6 @@ module Opower
       # @option config [String] :value The metric value (required)
       # @option config [String, Integer, Timestamp] :timestamp The timestamp in either epoch or a TimeStamp object.
       # @option config [Array] :tags Array of tags to set for this metric. (tag_key => value)
-      # @option config [Boolean] :no_duplicates? Prevent from inserting on existing metrics. Defaults to false.
       #
       # @return [Metric] a new Metric object
       def initialize(config = {})
@@ -21,14 +20,6 @@ module Opower
         @value = config[:value]
         @timestamp = config[:timestamp] ||  Time.now.to_i
         @tags = config[:tags] || {}
-        @no_duplicates = config[:no_duplicates?]
-      end
-
-      # Checks if duplicate metrics should be inserted upon write to OpenTSDB
-      #
-      # @return [Boolean]
-      def no_duplicates?
-        @no_duplicates
       end
 
       # Converts the metric into the format required for use by `put` to insert into OpenTSDB.

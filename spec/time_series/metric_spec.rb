@@ -4,13 +4,12 @@ require 'time_series'
 describe Opower::TimeSeries::Metric do
 
   it 'should be to initialize itself correctly' do
-    config = {:name => 'test1.test2', :timestamp => 12132342, :value => 1, :tags => {'x' => 1, 'y' => 2}, :no_duplicates? => true}
+    config = {:name => 'test1.test2', :timestamp => 12132342, :value => 1, :tags => {'x' => 1, 'y' => 2}}
 
     metric = Opower::TimeSeries::Metric.new(config)
     metric.name.should eq('test1.test2')
     metric.timestamp.should eq(12132342)
     metric.value.should eq(1)
-    metric.no_duplicates?.should be_true
     metric.tags.should eq({'x' => 1, 'y' => 2})
   end
 

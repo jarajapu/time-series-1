@@ -40,7 +40,7 @@ module Opower
           m[:tags].each { |k, v| tag_params << "#{k}=#{v}" } unless m[:tags].nil?
           str << m[:aggregator] + ':'
           str << ds[:period] + '-' + ds[:function] + ':' unless ds.nil?
-          str << m[:name] + '{' + tag_params.join(',') + '}'
+          str << m[:metric] + '{' + tag_params.join(',') + '}'
           metric_arr << str
         end
 
@@ -90,7 +90,7 @@ module Opower
         # check that the aggregator and metric labels exist
         metrics.each do |h|
           raise ArgumentError.new("Expected a Hash - got a #{h.class}: '#{h}'") unless h.is_a? Hash
-          %w(aggregator metric).all? { |mtag|
+          %w(aggregator metric).each { |mtag|
             unless h.has_key? (mtag.to_sym)
               raise ArgumentError.new('Aggregator and metric label must be present for query to run.')
             end

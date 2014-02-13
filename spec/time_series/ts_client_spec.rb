@@ -41,7 +41,7 @@ describe Opower::TimeSeries::TSClient do
     subject { Opower::TimeSeries::TSClient.new }
 
     before :each do
-      config = {:name => 'test1.test2', :timestamp => 12132342, :value => 1, :no_duplicates? => false}
+      config = {:name => 'test1.test2', :timestamp => 12132342, :value => 1}
       @metric = Opower::TimeSeries::Metric.new(config)
     end
 
@@ -54,20 +54,13 @@ describe Opower::TimeSeries::TSClient do
     it 'and should error on failing to insert data' do
       expect { subject.write(@metric) }.to raise_error(IOError, "Failed to insert metric #{@metric.name} with value of #{@metric.value} into OpenTSDB.")
     end
-
-    it 'and should stop inserting duplicate metrics when specified' do
-      client = Opower::TimeSeries::TSClient.new('opentsdb.va.opower.it', 4242)
-      config = {:name => 'sys.numa.allocation', :timestamp => 12132342, :value => 1, :no_duplicates? => true}
-      metric = Opower::TimeSeries::Metric.new(config)
-      expect { client.write(metric) }.to raise_error(ArgumentError, 'Duplicate metrics found with no_duplicates flag set.')
-    end
   end
 
   describe 'should support running queries' do
     subject { Opower::TimeSeries::TSClient.new('opentsdb.va.opower.it', 4242) }
 
     it 'should raise an error for a bad metric name' do
-      m = [{ :aggregator => 'sum', :name => 'mtest'}]
+      m = [{ :aggregator => 'sum', :metric => 'mtest'}]
       config = { :format => :ascii, :start => 123456, :end => 134567, :m => m }
       @query = Opower::TimeSeries::Query.new(config)
       expect { subject.run_query(@query) }.to raise_error(ArgumentError, 'Metric mtest is not registered, check again.')
@@ -75,7 +68,7 @@ describe Opower::TimeSeries::TSClient do
 
     it 'should raise an error for a bad tagk name ' do
       metrics = subject.suggest('sys')
-      m = [{ :aggregator => 'sum', :name => metrics[0], :tags => {:bad_tagk => 'apsc001.va.opower.it'}}]
+      m = [{ :aggregator => 'sum', :metric => metrics[0], :tags => {:bad_tagk => 'apsc001.va.opower.it'}}]
       config = { :format => :ascii, :start => 123456, :end => 134567, :m => m }
       @query = Opower::TimeSeries::Query.new(config)
       expect { subject.run_query(@query) }.to raise_error(ArgumentError, 'Tag Key bad_tagk is not registered, check again.')
@@ -84,7 +77,7 @@ describe Opower::TimeSeries::TSClient do
     it 'should return a blank string for a query with no expected results' do
       metrics = subject.suggest('sys')
       metrics.should_not be_nil
-      m = [{ :aggregator => 'sum', :name => metrics[0]}]
+      m = [{ :aggregator => 'sum', :metric => metrics[0]}]
       config = { :format => :ascii, :start => 123456, :end => 134567, :m => m }
       @query = Opower::TimeSeries::Query.new(config)
       results = subject.run_query(@query)
@@ -93,7 +86,7 @@ describe Opower::TimeSeries::TSClient do
 
     it 'should return data for a query in ASCII format' do
       metrics = subject.suggest('sys')
-      m = [{ :aggregator => 'sum', :name => metrics[0], :tags => {:host => 'apsc001.va.opower.it'}}]
+      m = [{ :aggregator => 'sum', :metric => metrics[0], :tags => {:host => 'apsc001.va.opower.it'}}]
       config = { :format => :ascii, :start => '2014/01/06-12:15:26', :end => '2014/01/06-12:18:26', :m => m }
       @query = Opower::TimeSeries::Query.new(config)
       results = subject.run_query(@query)
@@ -104,7 +97,7 @@ describe Opower::TimeSeries::TSClient do
 
     it 'should return data for a query in JSON format' do
       metrics = subject.suggest('sys')
-      m = [{ :aggregator => 'sum', :name => metrics[0], :tags => {:host => 'apsc001.va.opower.it'}}]
+      m = [{ :aggregator => 'sum', :metric => metrics[0], :tags => {:host => 'apsc001.va.opower.it'}}]
       config = { :format => :json, :start => '2014/01/06-12:15:26', :end => '2014/01/06-12:15:36', :m => m }
       @query = Opower::TimeSeries::Query.new(config)
       results = subject.run_query(@query)
@@ -116,7 +109,7 @@ describe Opower::TimeSeries::TSClient do
 
     it 'should return a URL for a query in PNG format' do
       metrics = subject.suggest('sys')
-      m = [{ :aggregator => 'sum', :name => metrics[0], :tags => {:host => 'apsc001.va.opower.it'}}]
+      m = [{ :aggregator => 'sum', :metric => metrics[0], :tags => {:host => 'apsc001.va.opower.it'}}]
       config = { :format => :png, :start => '2014/01/06-12:15:26', :end => '2014/01/06-12:15:36', :m => m }
       @query = Opower::TimeSeries::Query.new(config)
       results = subject.run_query(@query)

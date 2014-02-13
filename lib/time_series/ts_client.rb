@@ -47,14 +47,6 @@ module Opower
       #
       # @param [Metric] metric The metric to write to OpenTSDB
       def write (metric)
-        # Check for duplicate metrics, default: false
-        if metric.no_duplicates?
-          metrics = suggest(metric.name)
-          if metrics.length > 0 && metrics.include?(metric.name)
-            raise ArgumentError.new('Duplicate metrics found with no_duplicates flag set.')
-          end
-        end
-
         cmd = "echo \"put #{metric.to_s}\" | nc -w 30 #{@host} #{@port}"
 
         unless(@config[:dry_run])
@@ -97,10 +89,10 @@ module Opower
 
         metrics.each do |h|
           # Check the metrics are valid
-          metric = suggest(h[:name])
+          metric = suggest(h[:metric])
           return metric if (metric =~ /ERROR/)
-          if (metric.length == 0 || metric[0] != h[:name])
-            raise ArgumentError.new("Metric #{h[:name]} is not registered, check again.")
+          if (metric.length == 0 || metric[0] != h[:metric])
+            raise ArgumentError.new("Metric #{h[:metric]} is not registered, check again.")
           end
 
           unless h[:tags].nil?
