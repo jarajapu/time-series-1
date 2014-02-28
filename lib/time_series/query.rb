@@ -50,6 +50,8 @@ module Opower
         if (@format == 'json' || @format.nil?)
           @response = 'json'
           @format = 'ascii'
+        else
+          @response = @format
         end
       end
 
@@ -66,7 +68,7 @@ module Opower
       #
       # @return [String] full GET URL
       def to_s
-        return "q?#{get_query}"
+        get_query
       end
 
     private

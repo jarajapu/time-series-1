@@ -26,7 +26,7 @@ module Opower
       # @option cfg [Boolean] :dry_run When set to true, the client does not actually read/write to OpenTSDB.
       # @option cfg [Boolean] :validation Controls validation on queries. Defaults to true.
       def configure(cfg = {})
-        @config = {:dry_run => false, :validation => true}
+        @config = {:dry_run => false, :validation => true, :version => 2.0}
         @valid_config_keys = @config.keys
 
         cfg.each { |k, v| @config[k.to_sym] = v if @valid_config_keys.include? k.to_sym }
@@ -38,9 +38,10 @@ module Opower
       # @param [String] type The type to search for: 'metrics', 'tagk', 'tagv'
       #
       # @return [Array] an array of possible values based on the query/type
-      def suggest (query, type = 'metrics')
+      def suggest (query, type = 'metrics', max = 1)
+        endpoint = @config[:version] >= 2.0 ? 'api/suggest' : 'suggest'
         return @client + "suggest?type=#{type}&q=#{query}" if @config[:dry_run]
-        HTTParty.get(@client + "suggest", :query => { :type => type, :q => query}).parsed_response
+        HTTParty.get(@client + endpoint, :query => { :type => type, :q => query, :max => max}).parsed_response
       end
 
       # Writes the specified Metric object to OpenTSDB.
@@ -69,11 +70,13 @@ module Opower
       # @return [String] the results of the query
       def run_query(query)
         validate_query(query) unless @config[:dry_run] || !@config[:validation]
-        return @client + query.to_s if query.format == 'png' || @config[:dry_run]
+        return @client + 'q?' + query.to_s if query.format == 'png'
 
-        data = HTTParty.get(@client + query.to_s)
+        endpoint = @config[:version] >= 2.0 && query.response != 'ascii' ? 'api/query?' : 'q?'
+        return @client + endpoint + query.to_s if @config[:dry_run]
+        data = HTTParty.get(@client + endpoint + query.to_s)
 
-        if (query.response == 'json')
+        if (query.response == 'json' && @config[:version] < 2.0)
           parse_json(data.parsed_response)
         elsif (query.format == 'ascii')
           data.parsed_response

@@ -17,6 +17,35 @@ Alternatively, build it from source and install it:
 
 ### Usage
 
+#### Configuration
+
+```ruby
+cfg = { :version => 2.0, :dry_run => false, :validation => true }
+client = Opower::TimeSeries::TSClient.new('opentsdb.va.opower.it', 4242)
+client.configure(cfg)
+```
+
+The following options are supported:
+
+##### version
+Default value: `1.1`
+Type: `Number`
+Values: `1.1`, `2.0`, `2.1`
+
+The version of TSBD to run against. If you wish to use the new 2.0 endpoints, set version to 2.0 or higher.
+
+##### dry_run
+Default value: `false`
+Type: `Boolean`
+
+If set to true, this gem will not run any commands, only output the generated URLs or calls to OpenTSDB.
+
+##### validation
+Default value: `true`
+Type: `Boolean`
+
+If set to false, some validation will be disabled. Improves performance at the cost of data safety.
+
 #### Search for a registered metric/tagk/tagv
 
 First, initialize a connection to an OpenTSDB instance:
