@@ -3,6 +3,6 @@ module Opower
   # @see Opower::TimeSeries::TSDBClient
   module TimeSeries
     # Controls the version of the TimeSeries gem.
-    VERSION = '2.0.1'
+    VERSION = '2.1.0'
   end
 end

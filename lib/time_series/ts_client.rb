@@ -38,7 +38,7 @@ module Opower
       # @param [String] type The type to search for: 'metrics', 'tagk', 'tagv'
       #
       # @return [Array] an array of possible values based on the query/type
-      def suggest (query, type = 'metrics', max = 1)
+      def suggest (query, type = 'metrics', max = 10)
         endpoint = @config[:version] >= 2.0 ? 'api/suggest' : 'suggest'
         return @client + "suggest?type=#{type}&q=#{query}" if @config[:dry_run]
         HTTParty.get(@client + endpoint, :query => { :type => type, :q => query, :max => max}).parsed_response
