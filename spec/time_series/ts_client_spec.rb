@@ -175,6 +175,17 @@ describe Opower::TimeSeries::TSClient do
       results[0]['metric'].should eq(metrics[0])
     end
 
+    it 'should return data for a rate query in JSON format' do
+      metrics = subject.suggest('sys')
+      m = [{ :aggregator => 'sum', :metric => metrics[0], :rate => true, :tags => {:host => 'apsc001.va.opower.it'}}]
+      config = { :format => :json, :start => '1h-ago', :m => m }
+      @query = Opower::TimeSeries::Query.new(config)
+      results = subject.run_query(@query)
+      results.should_not eq([])
+      results.length.should > 0
+      results[0]['metric'].should eq(metrics[0])
+    end
+
     it 'should return a URL for a query in PNG format' do
       metrics = subject.suggest('sys')
       m = [{ :aggregator => 'sum', :metric => metrics[0], :tags => {:host => 'apsc001.va.opower.it'}}]

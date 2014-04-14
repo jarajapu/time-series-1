@@ -168,7 +168,7 @@ cfg = {
         :format => :ascii,
         :start => 14535353
         :end => 16786786,
-        :m => [{ :aggregator => 'sum', :metric => 'proc.stat.cpu', :tags => {:type => 'iowait'} }]
+        :m => [{ :aggregator => 'sum', :metric => 'proc.stat.cpu', :rate => true, :tags => {:type => 'iowait'} }]
 }
 
 query = Opower::TimeSeries::Query.new(cfg)

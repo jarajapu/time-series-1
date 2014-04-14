@@ -40,6 +40,7 @@ module Opower
           m[:tags].each { |k, v| tag_params << "#{k}=#{v}" } unless m[:tags].nil?
           str << m[:aggregator] + ':'
           str << ds[:period] + '-' + ds[:function] + ':' unless ds.nil?
+          str << 'rate:' unless m[:rate].nil? || m[:rate] == false
           str << m[:metric] + '{' + tag_params.join(',') + '}'
           metric_arr << str
         end
