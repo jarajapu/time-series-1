@@ -1,4 +1,6 @@
-require 'httparty'
+require 'rubygems'
+require 'excon'
+require 'json'
 
 module Opower
   module TimeSeries
@@ -10,13 +12,15 @@ module Opower
       #
       # @param [String] host The hostname/IP to connect to. Defaults to 'localhost'.
       # @param [Integer] port The port to connect to. Defaults to 4242.
+      # @param [Boolean] persistent Keep a persistent HTTP connection
       #
       # @return [TSClient] Client connection to OpenTSDB.
-      def initialize (host = '127.0.0.1', port = 4242)
+      def initialize (host = '127.0.0.1', port = 4242, persistent = true)
         @host = host
         @port = port
 
         @client = "http://#{host}:#{port}/"
+        @connection = Excon.new(@client, :persistent => persistent, :idempotent => true, :tcp_nodelay => true)
         self.configure()
       end
 
@@ -41,7 +45,7 @@ module Opower
       def suggest (query, type = 'metrics', max = 10)
         endpoint = @config[:version] >= 2.0 ? 'api/suggest' : 'suggest'
         return @client + "suggest?type=#{type}&q=#{query}" if @config[:dry_run]
-        HTTParty.get(@client + endpoint, :query => { :type => type, :q => query, :max => max}).parsed_response
+        JSON.parse(@connection.get(:path => endpoint, :query => { :type => type, :q => query, :max => max}).body)
       end
 
       # Writes the specified Metric object to OpenTSDB.
@@ -50,7 +54,9 @@ module Opower
       def write (metric)
         cmd = "echo \"put #{metric.to_s}\" | nc -w 30 #{@host} #{@port}"
 
-        unless(@config[:dry_run])
+        if @config[:dry_run]
+          cmd
+        else
           # Write into the db
           ret = system(cmd)
 
@@ -58,8 +64,6 @@ module Opower
           unless ret || ret.nil?
             raise IOError.new("Failed to insert metric #{metric.name} with value of #{metric.value} into OpenTSDB.")
           end
-        else
-          cmd
         end
       end
 
@@ -74,12 +78,12 @@ module Opower
 
         endpoint = @config[:version] >= 2.0 && query.response != 'ascii' ? 'api/query?' : 'q?'
         return @client + endpoint + query.to_s if @config[:dry_run]
-        data = HTTParty.get(@client + endpoint + query.to_s)
+        data = @connection.get(:path => endpoint + query.to_s).body
 
-        if (query.response == 'json' && @config[:version] < 2.0)
-          parse_json(data.parsed_response)
-        elsif (query.format == 'ascii')
-          data.parsed_response
+        if query.response == 'json'
+          @config[:version] < 2.0 ? parse_json(data) : JSON.parse(data)
+        elsif query.format == 'ascii'
+          data
         end
       end
 
@@ -94,7 +98,7 @@ module Opower
           # Check the metrics are valid
           metric = suggest(h[:metric])
           return metric if (metric =~ /ERROR/)
-          if (metric.length == 0 || metric[0] != h[:metric])
+          if metric.length == 0 || metric[0] != h[:metric]
             raise ArgumentError.new("Metric #{h[:metric]} is not registered, check again.")
           end
 
@@ -103,7 +107,7 @@ module Opower
             h[:tags].each_key do |k|
               tag_key = suggest(k, 'tagk')
               return tag_key if (tag_key =~ /ERROR/)
-              if (tag_key.length == 0 || tag_key[0] != k.to_s)
+              if tag_key.length == 0 || tag_key[0] != k.to_s
                 raise ArgumentError.new("Tag Key #{k} is not registered, check again.")
               end
             end
@@ -128,7 +132,7 @@ module Opower
           h['value'] = line_arr[2]
           i = 3
 
-          while (i < line_arr.length)
+          while i < line_arr.length
             tag_data = line_arr[i].split('=')
             tags[tag_data[0]] = tag_data[1]
             i = i + 1

@@ -23,5 +23,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'yard'
   s.add_development_dependency 'redcarpet'
   s.add_dependency 'rake', '~> 10.1.1'
-  s.add_dependency 'httparty', '~> 0.11.0'
+  s.add_dependency 'excon', '~> 0.36.0'
 end

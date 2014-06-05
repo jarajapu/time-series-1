@@ -1,5 +1,3 @@
-require 'httparty'
-
 module Opower
   module TimeSeries
     # Represents a query that can be sent to an OpenTSDB instance through a [TSDBClient] object.
@@ -48,7 +46,7 @@ module Opower
         @config[:m] = metric_arr
         @format = @config.delete(:format).to_s
 
-        if (@format == 'json' || @format.nil?)
+        if @format == 'json' || @format.nil?
           @response = 'json'
           @format = 'ascii'
         else

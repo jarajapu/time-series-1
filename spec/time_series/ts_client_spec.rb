@@ -83,7 +83,7 @@ describe Opower::TimeSeries::TSClient do
       config = { :format => :ascii, :start => '2010/01/06-12:15:26', :end => '2010/01/06-12:16:26', :m => m }
       @query = Opower::TimeSeries::Query.new(config)
       results = subject.run_query(@query)
-      results.should be_nil
+      results.should eq('')
     end
 
     it 'should return data for a query in ASCII format' do
