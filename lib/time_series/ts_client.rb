@@ -28,9 +28,9 @@ module Opower
       #
       # @param [Hash] cfg The configuration options to set.
       # @option cfg [Boolean] :dry_run When set to true, the client does not actually read/write to OpenTSDB.
-      # @option cfg [Boolean] :validation Controls validation on queries. Defaults to true.
+      # @option cfg [Boolean] :validation Controls validation on queries. Defaults to false.
       def configure(cfg = {})
-        @config = {:dry_run => false, :validation => true, :version => 2.0}
+        @config = {:dry_run => false, :validation => false, :version => 2.0}
         @valid_config_keys = @config.keys
 
         cfg.each { |k, v| @config[k.to_sym] = v if @valid_config_keys.include? k.to_sym }

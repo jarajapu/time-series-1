@@ -60,7 +60,7 @@ describe Opower::TimeSeries::TSClient do
     subject { Opower::TimeSeries::TSClient.new('opentsdb.va.opower.it', 4242) }
 
     before :each do
-      subject.configure({ :version => 1.1 })
+      subject.configure({ :version => 1.1, :validation => true })
       @metric_name = subject.suggest('sys')[0]
     end
 
@@ -125,16 +125,20 @@ describe Opower::TimeSeries::TSClient do
 
     it 'should raise an error for a bad metric name' do
       m = [{ :aggregator => 'sum', :metric => 'mtest'}]
-      config = { :format => :ascii, :start => 123456, :end => 134567, :m => m }
+      config = { :format => :json, :start => '2009/01/04-12:15:26', :end => '2009/01/05-12:15:26', :m => m }
       @query = Opower::TimeSeries::Query.new(config)
-      expect { subject.run_query(@query) }.to raise_error(ArgumentError, 'Metric mtest is not registered, check again.')
+      results = subject.run_query(@query)
+
+      results['error'].should_not be_nil
+      results['error']['message'].should eq("No such name for 'metrics': 'mtest'")
     end
 
     it 'should raise an error for a bad tagk name ' do
       m = [{ :aggregator => 'sum', :metric => @metric_name, :tags => {:bad_tagk => 'apsc001.va.opower.it'}}]
-      config = { :format => :ascii, :start => 123456, :end => 134567, :m => m }
+      config = { :format => :json, :start => '2009/01/04-12:15:26', :end => '2009/01/05-12:15:26', :m => m }
       @query = Opower::TimeSeries::Query.new(config)
-      expect { subject.run_query(@query) }.to raise_error(ArgumentError, 'Tag Key bad_tagk is not registered, check again.')
+      results = subject.run_query(@query)
+      results['error']['message'].should eq("No such name for 'tagk': 'bad_tagk'")
     end
 
     it 'should return an empty JSON array for a query with no expected results' do
