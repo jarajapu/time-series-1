@@ -40,11 +40,11 @@ Type: `Boolean`
 
 If set to true, this gem will not run any commands, only output the generated URLs or calls to OpenTSDB.
 
-##### validation
-Default value: `true`
+##### validation (deprecated)
+Default value: `false`
 Type: `Boolean`
 
-If set to false, some validation will be disabled. Improves performance at the cost of data safety.
+If set to false, some validation will be disabled. In OpentTSDB 2.0, this validation is now done on the server side so once support for 1.1 is dropped, this configuration parameter will go away.
 
 #### Search for a registered metric/tagk/tagv
 
