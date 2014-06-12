@@ -100,7 +100,7 @@ Then, you can create a query object to run against the specified client:
 ```ruby
 cfg = {
         :format => :png,
-        :start => '2013/01/01-01:00:00'
+        :start => '2013/01/01-01:00:00',
         :end => '2013/02/01-01:00:00',
         :m => [{ :aggregator => 'sum', :metric => 'proc.stat.cpu', :tags => {:type => 'iowait'} }],
         :nocache => true
@@ -166,7 +166,7 @@ See the [OpenTSDB documentation](http://opentsdb.net/http-api.html#/q_Parameters
 ```ruby
 cfg = {
         :format => :ascii,
-        :start => 14535353
+        :start => 14535353,
         :end => 16786786,
         :m => [{ :aggregator => 'sum', :metric => 'proc.stat.cpu', :rate => true, :tags => {:type => 'iowait'} }]
 }
@@ -178,8 +178,8 @@ client.run_query(query)
 
 ```ruby
 cfg = {
-        :format => :json,
-        :start => '3m-ago'
+        :format => :json,,
+        :start => '3m-ago',
         :m => [{ :aggregator => 'max', :metric => 'proc.stat.cpu', :tags => {:type => 'iowait'} }],
         :nocache => true
 }
@@ -187,6 +187,26 @@ cfg = {
 query = Opower::TimeSeries::Query.new(cfg)
 client.configure({ :version: => 1.1 })
 client.run_query(query)
+```
+
+#### Running Multiple Queries Simultaneously
+
+If you need to query multiple metrics at the same time, time-series provides support for that as well:
+
+```ruby
+queries = []
+3.times do
+    cfg = {
+            :format => :ascii,
+            :start => 14535353,
+            :end => 16786786,
+            :m => [{ :aggregator => 'sum', :metric => 'proc.stat.cpu', :rate => true, :tags => {:type => 'iowait'} }]
+    }
+
+    queries << Opower::TimeSeries::Query.new(cfg)
+end
+
+client.run_queries(queries)
 ```
 
 #### Testing time_series ( ruby gem for reading and writing OpenTSDB )

@@ -189,6 +189,21 @@ describe Opower::TimeSeries::TSClient do
       results.should_not eq('')
       results.should_not include('Internal Server Error')
     end
+
+    it 'should return data for multiple queries' do
+      queries = []
+      3.times do
+        m = [{ :aggregator => 'sum', :metric => @metric_name, :tags => {:host => 'apsc001.va.opower.it'}}]
+        config = { :format => :json, :start => '1h-ago', :m => m }
+        queries << Opower::TimeSeries::Query.new(config)
+      end
+
+      results = subject.run_queries(queries)
+      results.length.should eq(3)
+      results.each do |result|
+        result.should_not eq('')
+      end
+    end
   end
 
 end

@@ -6,7 +6,7 @@ module Opower
   module TimeSeries
     # Ruby client object to interface with an OpenTSDB instance.
     class TSClient
-      attr_accessor :host, :port, :client, :config
+      attr_accessor :host, :port, :client, :config, :connection
 
       # Creates a connection to a specified OpenTSDB instance
       #
@@ -85,6 +85,40 @@ module Opower
         elsif query.format == 'ascii'
           data
         end
+      end
+
+      # Runs the specified queries against OpenTSDB in a HTTP pipelined connection.
+      #
+      # @param [Array] queries An array of queries to run against OpenTSDB.
+      # @return [Array] a matching array of results for each query
+      def run_queries(queries)
+        results = []
+        requests = []
+
+        # requests cannot be idempotent when pipelined, so we temporarily disable it
+        idempotent = @connection.data[:idempotent]
+        @connection.data[:idempotent] = false
+
+        queries.each do |query|
+          endpoint = @config[:version] >= 2.0 && query.response != 'ascii' ? 'api/query?' : 'q?'
+          requests << {:method => :get, :path => endpoint + query.to_s}
+        end
+
+        responses = @connection.requests(requests)
+
+        responses.each_index do |i|
+          data = responses[i].body
+
+          if queries[i].response == 'json'
+            data = @config[:version] < 2.0 ? parse_json(data) : JSON.parse(data)
+          end
+
+          results << data
+        end
+
+        @connection.data[:idempotent] = idempotent
+
+        results
       end
 
     private
