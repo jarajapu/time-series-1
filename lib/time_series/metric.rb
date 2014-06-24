@@ -1,3 +1,5 @@
+# -*- encoding: utf-8 -*-
+
 module Opower
   module TimeSeries
     # Represents a metric that can be inserted into OpenTSDB instance through a [TSDBClient] object.
@@ -32,26 +34,26 @@ module Opower
         [@name, @timestamp, @value, result.rstrip].join(' ')
       end
 
-    private
+      private
+
       # Validates the metric inputs
       #
       # @param [Hash] config The configuration to validate.
       # @param [Array] required_fields The required fields to be set inside the configuration.
-      def validate(config={}, required_fields)
+      def validate(config = {}, required_fields)
         # Make sure the data exists & validate required fields
-        if (config.empty?)
-          raise ArgumentError.new('No data is available to write into TSDB.')
+        if config.empty?
+          fail(ArgumentError, 'No data is available to write into TSDB.')
         end
 
         # Required fields check
         required_fields.each do |f|
-          if config[f.to_sym].nil?
-            raise ArgumentError.new("#{f} is required to write into TSDB.")
-          end
+          next unless config[f.to_sym].nil?
+          fail(ArgumentError, "#{f} is required to write into TSDB.")
         end
 
         # Reject if user provided timestamp as not numeric
-        raise ArgumentError.new('Timestamp must be numeric') if config[:timestamp] && !(config[:timestamp].is_a? Fixnum)
+        fail(ArgumentError, 'Timestamp must be numeric') if config[:timestamp] && !(config[:timestamp].is_a? Fixnum)
       end
     end
   end

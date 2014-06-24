@@ -1,0 +1,9 @@
+LineLength:
+  Enabled: true
+  Max: 128
+AllCops:
+  Include:
+    - 'lib/**/*'
+  Exclude:
+    - 'vendor/**/*'
+    - 'bin/**/*'
