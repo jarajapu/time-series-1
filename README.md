@@ -27,9 +27,9 @@ client.configure({ :version => 2.0, :dry_run => false, :validation => true })
 The following options are supported:
 
 ##### version
-Default value: `1.1`
-Type: `Number`
-Values: `1.1`, `2.0`, `2.1`
+Default value: `2.0`
+Type: `String`
+Values: `2.0`, `2.1`
 
 The version of TSBD to run against. If you wish to use the new 2.0 endpoints, set version to 2.0 or higher.
 
@@ -38,12 +38,6 @@ Default value: `false`
 Type: `Boolean`
 
 If set to true, this gem will not run any commands, only output the generated URLs or calls to OpenTSDB.
-
-##### validation (deprecated)
-Default value: `false`
-Type: `Boolean`
-
-If set to false, some validation will be disabled. In OpentTSDB 2.0, this validation is now done on the server side so once support for 1.1 is dropped, this configuration parameter will go away.
 
 #### Search for a registered metric/tagk/tagv
 
@@ -206,7 +200,49 @@ end
 client.run_queries(queries)
 ```
 
-#### Testing time_series ( ruby gem for reading and writing OpenTSDB )
+#### Running Synthetic Metric Queries
+
+time_series also provides the capability to create synthetic metrics through the use of a formula and any number of queries against OpenTSDB.
+
+```ruby
+metric_x = [{ metric: 'sys.numa.allocation', tags: { host: 'apsc001.va.opower.it' } }]
+query_config_x = { format: :json, start: '1h-ago', m: metric_x }
+@query_metric_x = Opower::TimeSeries::Query.new(query_config_x)
+
+metric_y = [{ metric: 'sys.numa.foreign_allocs', tags: { host: 'apsc001.va.opower.it' } }]
+query_config_y = { format: :json, start: '1h-ago', m: metric_y }
+@query_metric_y = Opower::TimeSeries::Query.new(query_config_y)
+
+name = 'My Synthetic Metric Alias'
+formula = 'x + y'
+query_hash = { x: @query_metric_x, y: @query_metric_y }
+client.run_synthetic_query(name, formula, query_hash)
+```
+This example creates a formula which adds `x + y` and feeds the calculation with data from OpenTSDB. You need to pass in a hash where the key maps to the parameters in the formula with their corresponding values consisting of a Query object. When the calculation is performed, it will only operate on matching timestamps currently. If there are no matching data-points, it will return nothing.
+
+For more information about what can be done with the formula parameters, read the documentation for the [Dentaku Calculator](https://github.com/rubysolo/dentaku). This gem expects any parameter in the formula to have a matching query in the query hash.
+
+##### Built-in Ruby Math support
+
+```ruby
+name = 'My Synthetic Metric Alias'
+formula = 'cos(x) + y'
+query_hash = { x: @query_metric_x, y: @query_metric_y }
+client.run_synthetic_query(name, formula, query_hash)
+```
+
+Formulas in time-series can use all of the basic methods provided by the Math module from Ruby.
+
+NOTE: You must wrap nested mathematical expressions in formulas or Dentaku will attempt to pass them as separate arguments into the lambda below!
+
+For example:
+Assume x = 1, y = 2
+ - cos(x + y) is translated into cos(1, 'add', 2) - this calls Math.cos(1, 'add', 2) - this obviously throws an error
+ - cos((x + y)) is translated into cos(3) - this correctly calls Math.cos(3)
+
+This is due to the way Dentaku handles the order of precedence; unless you wrap nested arguments, it will pass them separately.
+
+#### Testing time_series
 
 Test cases should be added for any new code added to this project.
 

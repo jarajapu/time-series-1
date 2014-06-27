@@ -3,26 +3,27 @@
 require 'rubygems'
 require 'excon'
 require 'json'
+require 'logger'
 
 module Opower
   module TimeSeries
     # Ruby client object to interface with an OpenTSDB instance.
     class TSClient
-      attr_accessor :host, :port, :client, :config, :connection
+      attr_accessor :host, :port, :client, :config, :connection, :connection_settings
 
       # Creates a connection to a specified OpenTSDB instance
       #
       # @param [String] host The hostname/IP to connect to. Defaults to 'localhost'.
       # @param [Integer] port The port to connect to. Defaults to 4242.
-      # @param [Boolean] persistent Keep a persistent HTTP connection
       #
       # @return [TSClient] Client connection to OpenTSDB.
-      def initialize(host = '127.0.0.1', port = 4242, persistent = true)
+      def initialize(host = '127.0.0.1', port = 4242)
         @host = host
         @port = port
 
         @client = "http://#{host}:#{port}/"
-        @connection = Excon.new(@client, persistent: persistent, idempotent: true, tcp_nodelay: true)
+        @connection = Excon.new(@client, persistent: true, idempotent: true, tcp_nodelay: true)
+        @connection_settings = @connection.data
         configure
       end
 
@@ -30,12 +31,15 @@ module Opower
       #
       # @param [Hash] cfg The configuration options to set.
       # @option cfg [Boolean] :dry_run When set to true, the client does not actually read/write to OpenTSDB.
-      # @option cfg [Boolean] :validation Controls validation on queries. Defaults to false.
+      # @option cfg [String] :version The version of OpenTSDB to run against. Defaults to 2.0.
       def configure(cfg = {})
-        @config = { dry_run: false, validation: false, version: 2.0 }
+        @config = { dry_run: false, version: '2.0' }
         @valid_config_keys = @config.keys
 
-        cfg.each { |k, v| @config[k.to_sym] = v if @valid_config_keys.include? k.to_sym }
+        cfg.each do |key, value|
+          key = key.to_sym
+          @config[key] = value if @valid_config_keys.include?(key)
+        end
       end
 
       # Returns suggestions for metric or tag names
@@ -45,9 +49,8 @@ module Opower
       #
       # @return [Array] an array of possible values based on the query/type
       def suggest(query, type = 'metrics', max = 10)
-        endpoint = @config[:version] >= 2.0 ? 'api/suggest' : 'suggest'
-        return @client + "suggest?type=#{type}&q=#{query}" if @config[:dry_run]
-        JSON.parse(@connection.get(path: endpoint, query: { type: type, q: query, max: max }).body)
+        return @client + "api/suggest?type=#{type}&q=#{query}" if @config[:dry_run]
+        JSON.parse(@connection.get(path: 'api/suggest', query: { type: type, q: query, max: max }).body)
       end
 
       # Writes the specified Metric object to OpenTSDB.
@@ -63,9 +66,7 @@ module Opower
           ret = system(cmd)
 
           # Command failed to run
-          unless ret || ret.nil?
-            fail(IOError, "Failed to insert metric #{metric.name} with value of #{metric.value} into OpenTSDB.")
-          end
+          fail(IOError, "Failed to insert metric #{metric.name} with value of #{metric.value} into OpenTSDB.") unless ret
         end
       end
 
@@ -75,13 +76,24 @@ module Opower
       # @param [Query] query The query object to execute with.
       # @return [Result || String] the results of the query
       def run_query(query)
-        url = build_url(query)
-        return @client + url if @config[:dry_run] || query.format == 'png'
+        return @client + query.as_graph if @config[:dry_run] || query.format == :png
+        Result.new(@connection.get(path: 'api/query', query: query.request))
+      end
 
-        validate_query(query) if @config[:validation]
-        response = @connection.get(path: url)
+      # Runs a synthetic query using queries against OpenTSDB. It expects a formula and a matching Hash which maps
+      # parameters in the formula to time_series' query objects.
+      #
+      # @param name [String] the alias for this synthetic series
+      # @param formula [String] the Dentaku calculator formula to use
+      # @param query_hash [Hash] a Hash containing Query objects that map to corresponding parameters in the formula
+      # @return [SyntheticResult] the calculated result of the formula
+      def run_synthetic_query(name, formula, query_hash)
+        results_hash = query_hash.map { |key, query| { key => run_query(query).results[0].fetch('dps') } }
+        .reduce do |results, result|
+          results.merge(result)
+        end
 
-        Opower::TimeSeries::Result.new(response, query.format, @config[:version])
+        SyntheticResult.new(name, formula, results_hash)
       end
 
       # Runs the specified queries against OpenTSDB in a HTTP pipelined connection.
@@ -90,72 +102,39 @@ module Opower
       # @return [Array] a matching array of results for each query
       def run_queries(queries)
         # requests cannot be idempotent when pipelined, so we temporarily disable it
-        idempotent = @connection.data[:idempotent]
-        @connection.data[:idempotent] = false
+        @connection_settings[:idempotent] = false
 
         results = run_pipelined_request(queries)
 
-        @connection.data[:idempotent] = idempotent
+        @connection_settings[:idempotent] = true
         results
       end
 
       private
 
-      # Validates the query before executing it on the OpenTSDB instance.
+      # Runs a series of queries in a pipelined, persistent HTTP request against OpenTSDB.
       #
-      # @param [Query] query The Query object to validate.
-      def validate_query(query)
-        metrics = query.metrics
-
-        metrics.each do |h|
-          # Check the metrics are valid
-          metric = suggest(h[:metric])
-
-          if metric.length == 0 || metric[0] != h[:metric]
-            fail(ArgumentError, "Metric #{h[:metric]} is not registered, check again.")
-          end
-
-          check_tags(h[:tags])
-        end
-      end
-
-      def build_url(query)
-        endpoint = @config[:version] >= 2.0 && query.format != 'ascii' ? 'api/query?' : 'q?'
-        endpoint = 'q?' if query.format == 'png'
-        endpoint + query.to_s
-      end
-
-      def check_tags(tags)
-        return if tags.nil?
-
-        # Check the tags are valid
-        tags.each_key do |k|
-          tag_key = suggest(k, 'tagk')
-
-          next unless tag_key.length == 0 || tag_key[0] != k.to_s
-          fail(ArgumentError, "Tag Key #{k} is not registered, check again.")
-        end
-      end
-
+      # @param [Array] queries Array of Query objects to run against OpenTSDB
+      # @return [Array] corresponding Array of Result objects
       def run_pipelined_request(queries)
-        results = []
-
-        responses = @connection.requests(build_queries(queries))
-        responses.each_index do |i|
-          results << Opower::TimeSeries::Result.new(responses[i], queries[i].format, @config[:version])
-        end
-
-        results
+        wrapper = PipelineWrapper.new(@config, queries)
+        responses = @connection.requests(wrapper.requests)
+        responses.map { |response| Result.new(response) }
       end
 
-      def build_queries(queries)
-        requests = []
-        queries.each do |query|
-          endpoint = @config[:version] >= 2.0 && query.format != 'ascii' ? 'api/query?' : 'q?'
-          requests << { method: :get, path: endpoint + query.to_s }
-        end
+      # Wraps pipelined requests and creates their individual HTTP requests against OpenTSDB
+      class PipelineWrapper
+        attr_reader :requests
 
-        requests
+        # Initializes the pipeline wrapper and sets up the Excon requests based on the queries.
+        #
+        # @param [Hash] config the client configuration
+        # @param [Array] queries the Array of Query objects to execute
+        def initialize(config, queries)
+          @config = config
+          @queries = queries
+          @requests = @queries.map { |query| { method: :get, path: 'api/query', query: query.request } }
+        end
       end
     end
   end

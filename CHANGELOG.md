@@ -1,3 +1,8 @@
+# v4.0.0
+- Added initial support for synthetic metrics through formula calculations.
+- Dropped OpenTSDB 1.1 support (includes dropping ASCII output support!)
+- Dropped client-side validation support (done by OpenTSDB now)
+
 # v3.0.0
 - Updated response signatures to include status code, result count, and explicit error messages.
 

@@ -1,28 +1,38 @@
 # -*- encoding: utf-8 -*-
-$LOAD_PATH.push File.expand_path('../lib', __FILE__)
-require 'time_series/version'
+# vim: ft=ruby
 
-Gem::Specification.new do |s|
-  s.name = 'time_series'
-  s.version = Opower::TimeSeries::VERSION
-  s.platform = Gem::Platform::RUBY
-  s.authors = ['Uday Jarajapu', 'Ravikumar Gudipati', 'Jan Mangs']
-  s.email = %w(uday.jarajapu@opower.com ravikumar.gudipati@opower.com jan.mangs@opower.com)
-  s.homepage = 'https://github.va.opower.it/opower/time-series'
-  s.summary = %q(OPower OpenTSDB tools)
-  s.description = %q(Provides a set of tools for working with time series data in OpenTSDB data store)
+require File.expand_path('../lib/time_series/version', __FILE__)
 
-  s.files = `git ls-files`.split("\n")
-  s.test_files = `git ls-files -- {test,spec,features}/*`.split("\n")
-  s.executables = `git ls-files -- bin/*`.split("\n").map { |f| File.basename(f) }
-  s.require_paths = %w(lib)
+Gem::Specification.new do |gem|
+  gem.authors       = ['Uday Jarajapu', 'Ravikumar Gudipati', 'Jan Mangs']
+  gem.email         = %w(uday.jarajapu@opower.com ravikumar.gudipati@opower.com jan.mangs@opower.com)
+  gem.description = %q(Provides a set of tools for working with time series data in OpenTSDB data store)
+  gem.summary = %q(OpenTSDB Gem)
 
-  s.add_development_dependency 'rspec', '~> 2.14.1'
-  s.add_development_dependency 'mocha', '= 0.10.4'
-  s.add_development_dependency 'simplecov', '= 0.8.2'
-  s.add_development_dependency 'yard'
-  s.add_development_dependency 'redcarpet'
-  s.add_development_dependency 'rubocop'
-  s.add_dependency 'rake', '~> 10.1.1'
-  s.add_dependency 'excon', '~> 0.36.0'
+  gem.files         = `git ls-files`.split($\)
+  gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
+  gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
+  gem.name          = 'time_series'
+  gem.require_paths = %w(lib)
+  gem.version       = Opower::TimeSeries::VERSION
+
+  # dependencies.
+  gem.add_dependency('sysexits', '1.0.2')
+  gem.add_dependency('awesome_print', '~> 1.1.0')
+  gem.add_dependency 'excon', '~> 0.38.0'
+  gem.add_dependency 'dentaku', '~> 1.1.1'
+
+  # development dependencies.
+  gem.add_development_dependency('rspec', '~> 2.13.0')
+  gem.add_development_dependency('simplecov', '~> 0.7.0')
+  gem.add_development_dependency('guard', '~> 1.8.0')
+  gem.add_development_dependency('guard-rspec', '~> 3.0.1')
+  gem.add_development_dependency('rubocop', '~> 0.11.1')
+  gem.add_development_dependency('rainbow', '1.1.4')
+  gem.add_development_dependency('guard-rubocop', '~> 0.2.1')
+  gem.add_development_dependency('metric_fu', '~> 4.2.0')
+  gem.add_development_dependency('guard-reek', '~> 0.0.4')
+  gem.add_development_dependency('rake', '~> 10.0.1')
+  gem.add_development_dependency('yard', '~> 0.8.7')
+  gem.add_development_dependency('redcarpet', '~> 2.3.0')
 end

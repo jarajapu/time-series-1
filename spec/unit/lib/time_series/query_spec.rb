@@ -4,7 +4,7 @@ require 'time_series'
 require 'spec_helper'
 
 describe Opower::TimeSeries::Query do
-  @aggregator_msg = 'Aggregator and metric label must be present for query to run.'
+  @aggregator_msg = 'Metric label must be present for query to run'
 
   it 'should throw an error on trying to create an query without a start parameter' do
     m = [{ aggregator: 'sum', metric: 'mtest' }]
@@ -32,21 +32,14 @@ describe Opower::TimeSeries::Query do
     expect { Opower::TimeSeries::Query.new(config) }.to raise_error(ArgumentError, @aggregator_msg)
   end
 
-  it 'should throw an error on trying to create an query when missing aggregator label' do
-    config = { format: :ascii, start: 123_456, end: 134_567, m: [{ metric: 'sum' }] }
-    expect { Opower::TimeSeries::Query.new(config) }.to raise_error(ArgumentError, @aggregator_msg)
-  end
-
   it 'should throw an error on trying to create an query when missing metric label' do
     config = { format: :ascii, start: 123_456, end: 134_567, m: [{ aggregator: 'sum' }] }
     expect { Opower::TimeSeries::Query.new(config) }.to raise_error(ArgumentError, @aggregator_msg)
   end
 
-  it 'should be able to query for a metric from a host in ASCII format' do
-    m = [{ aggregator: 'sum', metric: 'mtest' }]
-    config = { format: :ascii, start: 123_456, end: 134_567, m: m }
-    query = Opower::TimeSeries::Query.new(config)
-    query.config.should eq(config)
-    query.format.should eq('ascii')
+  it 'should be able to create a full query including rate and down-sampling' do
+    m = [{ aggregator: 'sum', metric: 'mtest', rate: true, downsample: { period: '24h-ago', function: 'sum' } }]
+    config = { format: :json, start: 123_456, end: 134_567, m: m }
+    Opower::TimeSeries::Query.new(config)
   end
 end

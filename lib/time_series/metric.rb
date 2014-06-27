@@ -16,7 +16,7 @@ module Opower
       #
       # @return [Metric] a new Metric object
       def initialize(config = {})
-        validate(config, %w(name value))
+        validate(config, [:name, :value])
 
         @name = config[:name]
         @value = config[:value]
@@ -30,7 +30,7 @@ module Opower
       def to_s
         result = ''
         # Format the string for OpenTSDB
-        @tags.each { |k, v| result += "#{k}=#{v} " } unless @tags.nil?
+        @tags.each { |key, value| result += "#{key}=#{value} " }
         [@name, @timestamp, @value, result.rstrip].join(' ')
       end
 
@@ -41,19 +41,15 @@ module Opower
       # @param [Hash] config The configuration to validate.
       # @param [Array] required_fields The required fields to be set inside the configuration.
       def validate(config = {}, required_fields)
-        # Make sure the data exists & validate required fields
-        if config.empty?
-          fail(ArgumentError, 'No data is available to write into TSDB.')
-        end
-
         # Required fields check
-        required_fields.each do |f|
-          next unless config[f.to_sym].nil?
-          fail(ArgumentError, "#{f} is required to write into TSDB.")
+        required_fields.each do |field|
+          next if config.include?(field)
+          fail(ArgumentError, "#{field} is required to write into OpenTSDB.")
         end
 
         # Reject if user provided timestamp as not numeric
-        fail(ArgumentError, 'Timestamp must be numeric') if config[:timestamp] && !(config[:timestamp].is_a? Fixnum)
+        timestamp = config[:timestamp]
+        fail(ArgumentError, 'Timestamp must be numeric') if timestamp && !(timestamp.is_a? Fixnum)
       end
     end
   end
