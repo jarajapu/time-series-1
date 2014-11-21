@@ -80,7 +80,7 @@ describe Opower::TimeSeries::TSClient do
     end
 
     it 'should return data for a query in JSON format' do
-      m = [{ metric: @metric_name, tags: { host: 'apsc001.va.opower.it' } }]
+      m = [{ metric: @metric_name, tags: { host: 'apsc002.va.opower.it' } }]
       config = { format: :json, start: '1h-ago', m: m }
       @query = Opower::TimeSeries::Query.new(config)
       results = subject.run_query(@query).results
@@ -89,7 +89,7 @@ describe Opower::TimeSeries::TSClient do
     end
 
     it 'should return an error for invalid queries in JSON format' do
-      m = [{ metric: @metric_name, tags: { host: 'apsc001.va.opower.it' } },
+      m = [{ metric: @metric_name, tags: { host: 'apsc002.va.opower.it' } },
            { metric: @metric_name, tags: { bad_tagk: 'apsc001.va.opower.it' } }]
       config = { format: :json, start: '1h-ago', m: m }
       @query = Opower::TimeSeries::Query.new(config)
@@ -100,7 +100,7 @@ describe Opower::TimeSeries::TSClient do
 
     it 'should return data for a rate query in JSON format' do
       metrics = subject.suggest('sys')
-      m = [{ metric: metrics[0], rate: true, tags: { host: 'apsc001.va.opower.it' } }]
+      m = [{ metric: metrics[0], rate: true, tags: { host: 'apsc002.va.opower.it' } }]
       config = { format: :json, start: '1h-ago', m: m }
       @query = Opower::TimeSeries::Query.new(config)
       results = subject.run_query(@query).results
@@ -143,11 +143,11 @@ describe Opower::TimeSeries::TSClient do
     end
 
     it 'should compute a simple formula correctly' do
-      m = [{ metric: @metric_name_one, tags: { host: 'apsc001.va.opower.it' } }]
+      m = [{ metric: @metric_name_one, tags: { host: 'apsc002.va.opower.it' } }]
       config = { format: :json, start: '1h-ago', m: m }
       @query_one = Opower::TimeSeries::Query.new(config)
 
-      m = [{ metric: @metric_name_two, tags: { host: 'apsc001.va.opower.it' } }]
+      m = [{ metric: @metric_name_two, tags: { host: 'apsc002.va.opower.it' } }]
       config = { format: :json, start: '1h-ago', m: m }
       @query_two = Opower::TimeSeries::Query.new(config)
 
