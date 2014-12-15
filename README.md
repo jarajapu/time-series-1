@@ -35,7 +35,7 @@ Here is a table that lists options supported by the TimeSeries client:
 
 #### Search for a registered metric/tagk/tagv
 
-Using a properly configured client, we can search an OpenTSDB cluster to find suggestions for a metric, tag key, or tag value. This employs the /api/suggest end point of the OpenTSDB API and works as a simple namespace search. It is useful when we do not know what metric labels are being written to the OpenTSDB.
+Using a properly configured client, you can search an OpenTSDB cluster to find suggestions for a metric, tag key, or tag value. This employs the `/api/suggest` end point of the OpenTSDB API and works as a simple namespace search. It is useful when you do not know what metric labels are being written to the OpenTSDB.
 
 ```ruby
 client.suggest('proc.stat.cpu') # suggest a metric
@@ -45,7 +45,7 @@ client.suggest('proc.stat.cpu', 'tagv') # suggest a tagv
 
 #### Writing to OpenTSDB
 
-We can use a TimeSeries client to push telnet/netcat style writes to OpenTSDB. If no hostname and port are specified, this gem defaults to 127.0.0.1:4242. To insert a metric into OpenTSDB using a configured client, create a new `Metric` object first and then use the client.write call as shown below :
+You can use a TimeSeries client to push telnet/netcat style writes to OpenTSDB. If no hostname and port are specified, this gem defaults to 127.0.0.1:4242. To insert a metric into OpenTSDB using a configured client, create a new `Metric` object first and then use the `client.write` call as shown below :
 
 ```ruby
 metric_config = {
@@ -84,11 +84,10 @@ The `Query` object accepts the following parameters:
 | ------------- | ------------- | ------------- | ------------- |
 | :format | String | Specifies the output format. supported values include : `ascii`, `json`, `png`. | 'json' |
 | :start | `String` / `Integer` / `DateTime` | The query's start date/time expressed as '2013/01/01-01:00:00' (string), '5m-ago' (String, indicating data for last 5 minutes), 1232323232 (time since epoch, Integer) or as a Ruby DateTime object. This is a required field. | none | 
-| :end | `String` / `Integer` / `DateTime` | The query's end date. This field supports the same types as :start field. This field is optional | Time.now (current time) |
+| :end | `String` / `Integer` / `DateTime` | The query's end date. This field supports the same types as `:start` field. This field is optional | Time.now (current time) |
 | :m | `Array` | Array of JSON objects with the `aggregator`, `metrics`, and `tags` as fields: | none |
 
 Here is a sample metrics object , that goes into the :m object .
-
 ```ruby
 :m => [{ :aggregator => 'sum', :metric => 'proc.stat.cpu', :tags => {:type => 'iowait', :version => 2.1} }]
 ```
@@ -163,7 +162,7 @@ client.run_queries(queries)
 
 #### Running Synthetic Metric Queries
 
-Sometimes, we might need to create a new time series using metrics data from existing time series. We call these 'Synthetic Metric Queries'. Some examples could be disk utilization (expressed as disk used/total disk available) or CPU itilization (expressed as cpu cycles used/total cpu cycles).
+Sometimes, you might need to create a new time series using metrics data from existing time series. We call these 'Synthetic Metric Queries'. Some examples could be disk utilization (expressed as disk used/total disk available) or CPU itilization (expressed as cpu cycles used/total cpu cycles).
 
 TimeSeries also provides the capability to create synthetic metric queries through the use of a formula and any number of queries against OpenTSDB. Here is an example that creates a formula which adds two time series ( `x + y` ) and feeds the calculation with data from OpenTSDB :
 
@@ -182,7 +181,7 @@ query_hash = { x: @query_metric_x, y: @query_metric_y }
 client.run_synthetic_query(name, formula, query_hash)
 ```
 
-Note how you would need to pass in a hash object to the client in order to run a sythentic query. This indicates how the key maps to the parameters in the formula, with their corresponding values consisting of a Query object. When the calculation is performed, it will only operate on matching timestamps. If there are no matching data-points, it will return nothing.
+The above example illustrates how you pass in a hash object to the client in order to run a sythentic query. This also indicates how the key maps to the parameters in the formula, with their corresponding values consisting of a Query object. When the calculation is performed, it will only operate on matching timestamps. If there are no matching data-points, it will return nothing.
 
 For more information about what can be done with the formula parameters, read the documentation for the [Dentaku Calculator](https://github.com/rubysolo/dentaku). This gem expects any parameter in the formula to have a matching query in the query hash.
 
@@ -197,7 +196,7 @@ client.run_synthetic_query(name, formula, query_hash)
 
 Formulas in time-series can use all of the basic methods provided by the Math module from Ruby.
 
-NOTE: You must wrap nested mathematical expressions in formulas or Dentaku will attempt to pass them as separate arguments into the lambda below!
+You must wrap nested mathematical expressions in formulas or Dentaku will attempt to pass them as separate arguments into the lambda below!
 
 For example:
 Assume x = 1, y = 2
