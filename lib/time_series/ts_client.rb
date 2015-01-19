@@ -42,15 +42,34 @@ module Opower
         end
       end
 
+      # Basic check to see if the OpenTSDB is reachable
+      #
+      # @return [Boolean] true if call against api/version resolves
+      def valid?
+        @connection.get(path: 'api/version')
+        true
+      rescue Excon::Errors::SocketError
+        false
+      end
+
       # Returns suggestions for metric or tag names
       #
       # @param [String] query The string to search for
       # @param [String] type The type to search for: 'metrics', 'tagk', 'tagv'
       #
       # @return [Array] an array of possible values based on the query/type
-      def suggest(query, type = 'metrics', max = 10)
-        return @client + "api/suggest?type=#{type}&q=#{query}" if @config[:dry_run]
+      def suggest(query, type = 'metrics', max = 25)
+        return suggest_uri(query, type, max) if @config[:dry_run]
         JSON.parse(@connection.get(path: 'api/suggest', query: { type: type, q: query, max: max }).body)
+      end
+
+      # Returns the full URI for the suggest query in the context of this client.
+      #
+      # @param [String] query The string to search for
+      # @param [String] type The type to search for: 'metrics', 'tagk', 'tagv'
+      # @return [String] the URI
+      def suggest_uri(query, type = 'metrics', max = 25)
+        @client + "api/suggest?type=#{type}&q=#{query}&max=#{max}"
       end
 
       # Writes the specified Metric object to OpenTSDB.
@@ -76,8 +95,16 @@ module Opower
       # @param [Query] query The query object to execute with.
       # @return [Result || String] the results of the query
       def run_query(query)
-        return @client + query.as_graph if @config[:dry_run] || query.format == :png
+        return query_uri(query) if @config[:dry_run] || query.format == :png
         Result.new(@connection.get(path: 'api/query', query: query.request))
+      end
+
+      # Returns the full URI for the query in the context of this client.
+      #
+      # @param [Query] query The query object
+      # @return [String] the URI
+      def query_uri(query)
+        @client + 'api/query?' + query.as_graph
       end
 
       # Runs a synthetic query using queries against OpenTSDB. It expects a formula and a matching Hash which maps

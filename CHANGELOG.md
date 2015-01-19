@@ -1,3 +1,8 @@
+# v4.1.0
+- Bumped RSpec to `~> 3.0`
+- Updated tests to follow betterspecs.org guidelines
+- Added integration tests using Docker
+
 # v4.0.0
 - Added initial support for synthetic metrics through formula calculations.
 - Dropped OpenTSDB 1.1 support (includes dropping ASCII output support!)

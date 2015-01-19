@@ -8,6 +8,10 @@ Encoding:
 CaseIndentation:
   Enabled: false
 
+# Annoying warning when dealing with Unix timestamps
+NumericLiterals:
+  Enabled: false
+
 # MethodLength is superseded by Reek's TooManyStatements smell-finder.
 MethodLength:
   Enabled: false
