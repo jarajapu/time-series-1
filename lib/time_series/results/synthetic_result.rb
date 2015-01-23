@@ -40,11 +40,8 @@ module Opower
         @results.keys.length
       end
 
-      private
-
       # Subclass of Dentaku's calculator - adds math functions by default
       class TimeSeriesCalculator < Dentaku::Calculator
-
         def initialize
           super
           initialize_math_functions

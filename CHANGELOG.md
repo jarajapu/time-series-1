@@ -1,3 +1,7 @@
+# v4.1.1
+- Bumped Rubocop to `~> 0.28.0` and updated dependencies
+- Fixed new Rubocop warnings
+
 # v4.1.0
 - Bumped RSpec to `~> 3.0`
 - Updated tests to follow betterspecs.org guidelines

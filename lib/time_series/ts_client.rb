@@ -15,13 +15,14 @@ module Opower
       #
       # @param [String] host The hostname/IP to connect to. Defaults to 'localhost'.
       # @param [Integer] port The port to connect to. Defaults to 4242.
+      # @param [String] protocol The protocol to use. Defaults to 'http'.
       #
       # @return [TSClient] Client connection to OpenTSDB.
-      def initialize(host = '127.0.0.1', port = 4242)
+      def initialize(host = '127.0.0.1', port = 4242, protocol = 'http')
         @host = host
         @port = port
 
-        @client = "http://#{host}:#{port}/"
+        @client = "#{protocol}://#{host}:#{port}/"
         @connection = Excon.new(@client, persistent: true, idempotent: true, tcp_nodelay: true)
         @connection_settings = @connection.data
         configure
@@ -48,7 +49,7 @@ module Opower
       def valid?
         @connection.get(path: 'api/version')
         true
-      rescue Excon::Errors::SocketError
+      rescue Excon::Errors::SocketError, Excon::Errors::Timeout
         false
       end
 
@@ -116,7 +117,7 @@ module Opower
       # @return [SyntheticResult] the calculated result of the formula
       def run_synthetic_query(name, formula, query_hash)
         results_hash = query_hash.map { |key, query| { key => run_query(query).results[0].fetch('dps') } }
-        .reduce do |results, result|
+        results_hash = results_hash.reduce do |results, result|
           results.merge(result)
         end
 

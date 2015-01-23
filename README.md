@@ -209,11 +209,19 @@ This is due to the way Dentaku handles the order of precedence; unless you wrap 
 
 Test cases should be added for any new code added to this project.
 
-Run tests locally:
+Run acceptance/unit tests locally:
 
 ```
 rake spec
 ```
+
+Running integration tests:
+```
+docker pull opower/opentsdb
+rake integration
+```
+
+Integration tests requires you have a `Docker` installed and have ran `docker pull opower/opentsdb` before-hand.
 
 #### Generating Documentation
 
