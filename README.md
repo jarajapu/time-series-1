@@ -13,7 +13,7 @@ Alternatively, build it from source and install it:
     git clone git@github.va.opower.it:opower/time-series.git
     cd time-series
     gem build time_series.gemspec
-    gem install time_series-2.0.0.gem
+    gem install time_series-4.0.0.gem
 
 ### Usage
 Once you have the OpenTSDB cluster set up, we can configure the TimeSeries Gem to talk to the API. The first step would be configuring a TimeSeries client. If no host is specified, the client connects to localhost by default. The client connects to port 4242 by default.

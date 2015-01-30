@@ -11,27 +11,34 @@ task default: :build
 
 # If there are test failures, you'll need to write code to address them.
 # So no point in continuing to run the style tests.
-desc 'Runs all spec tests'
-RSpec::Core::RakeTask.new(:spec)
+desc 'Runs unit/acceptance tests'
+RSpec::Core::RakeTask.new(:spec) do |task|
+  task.pattern = 'spec/acceptance/**/*.rb,spec/unit/**/*.rb'
+end
+
+desc 'Runs integration tests'
+RSpec::Core::RakeTask.new(:integration) do
+  task.pattern = 'spec/integration/**/*.rb'
+end
 
 desc 'Runs yard'
 YARD::Rake::YardocTask.new(:yard)
 
 desc 'smells the lib directory, which Reek defaults to anyway'
-Reek::Rake::Task.new(:reek_lib) do |task|
+Reek::Rake::Task.new(:reek) do |task|
   task.verbose = true
 end
 
 desc 'smells the spec directory, which is less important than lib'
-Reek::Rake::Task.new(:reek_spec) do |task|
+Reek::Rake::Task.new(:reek_tests) do |task|
   task.source_files = 'spec/**/*.rb'
   task.verbose = true
 end
 
 desc 'runs Rubocop'
-Rubocop::RakeTask.new
+RuboCop::RakeTask.new
 
 desc 'Runs test and code cleanliness suite: Rubocop, Reek, rspec, and yard'
-task run_guards: [:spec, :yard, :reek_lib, :rubocop]
+task run_guards: [:spec, :yard, :reek, :reek_tests, :rubocop]
 
 task build: :run_guards

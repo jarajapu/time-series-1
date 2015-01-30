@@ -1,4 +1,5 @@
 require 'simplecov'
+require 'webmock/rspec'
 
 SimpleCov.start 'rails' do
   coverage_dir 'metrics/coverage'
@@ -12,4 +13,3 @@ end
 $LOAD_PATH << File.expand_path('../../lib', __FILE__)
 
 require File.expand_path('../fixtures.rb', __FILE__)
-require File.expand_path('../resources.rb', __FILE__)
