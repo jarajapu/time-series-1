@@ -125,4 +125,22 @@ describe Opower::TimeSeries::TSClient do
       end
     end
   end
+
+  describe '#valid?' do
+    subject { Opower::TimeSeries::TSClient.new('opentsdb.foo.com', 4242) }
+
+    context 'with a valid connection' do
+      it 'returns true' do
+        stub_request(:get, "#{subject.client}api/version").to_return(status: 200)
+        expect(subject.valid?).to be_truthy
+      end
+    end
+
+    context 'with an invalid connection' do
+      it 'returns false' do
+        stub_request(:get, "#{subject.client}api/version").to_timeout
+        expect(subject.valid?).to be_falsey
+      end
+    end
+  end
 end

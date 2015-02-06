@@ -38,12 +38,12 @@ describe Opower::TimeSeries::TSClient do
     context 'with defaults' do
       subject { Opower::TimeSeries::TSClient.new.config }
 
-      describe ([:dry_run]) do
+      describe(:dry_run) do
         subject { super()[:dry_run] }
         it { is_expected.to eq(false) }
       end
 
-      describe ([:version]) do
+      describe(:version) do
         subject { super()[:version] }
         it { is_expected.to eq('2.0') }
       end
@@ -52,16 +52,16 @@ describe Opower::TimeSeries::TSClient do
     context 'with user input' do
       subject do
         client = Opower::TimeSeries::TSClient.new
-        client.configure({ dry_run: true, validation: true, version: '2.1' })
+        client.configure(dry_run: true, validation: true, version: '2.1')
         client.config
       end
 
-      describe ([:dry_run]) do
+      describe(:dry_run) do
         subject { super()[:dry_run] }
         it { is_expected.to eq(true) }
       end
 
-      describe ([:version]) do
+      describe(:version) do
         subject { super()[:version] }
         it { is_expected.to eq('2.1') }
       end

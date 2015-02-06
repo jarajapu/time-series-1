@@ -115,13 +115,12 @@ module Opower
         # @param [Hash] metric the metric hash
         def initialize_downsample(metric)
           @downsample = false
+          return unless metric.key?(:downsample)
 
-          if metric.key?(:downsample)
-            down_sample = metric[:downsample]
-            @period = down_sample[:period]
-            @function = down_sample[:function]
-            @downsample = true
-          end
+          down_sample = metric[:downsample]
+          @period = down_sample[:period]
+          @function = down_sample[:function]
+          @downsample = true
         end
 
         # Builds the string representation of the tags for the metric

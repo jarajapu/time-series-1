@@ -17,7 +17,7 @@ RSpec::Core::RakeTask.new(:spec) do |task|
 end
 
 desc 'Runs integration tests'
-RSpec::Core::RakeTask.new(:integration) do
+RSpec::Core::RakeTask.new(:integration) do |task|
   task.pattern = 'spec/integration/**/*.rb'
 end
 

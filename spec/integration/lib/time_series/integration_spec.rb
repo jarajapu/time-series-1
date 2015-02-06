@@ -32,7 +32,7 @@ describe Opower::TimeSeries::TSClient do
       attempts += 1
     end
 
-    raise RemoteError('Failed to start Docker container!') if attempts > 10 && !client.valid?
+    fail RemoteError('Failed to start Docker container!') if attempts > 10 && !client.valid?
 
     # prewrite expected metrics
     metrics = [{ name: 'cpu.load', timestamp: 1420676750, value: 1, tags: { host: 'localhost' } },
@@ -40,7 +40,7 @@ describe Opower::TimeSeries::TSClient do
                { name: 'metric1', timestamp: 1421676714, value: 1, tags: { host: 'localhost' } },
                { name: 'metric2', timestamp: 1421676714, value: 2, tags: { host: 'localhost' } }]
 
-    metrics.each { |metric| client.write (Opower::TimeSeries::Metric.new(metric)) }
+    metrics.each { |metric| client.write(Opower::TimeSeries::Metric.new(metric)) }
 
     # wait for OpenTSDB to synch
     sleep 3
@@ -54,70 +54,76 @@ describe Opower::TimeSeries::TSClient do
     WebMock.disable_net_connect!
   end
 
-  describe 'should support running a suggest query' do
+  describe '#suggest' do
     subject { Opower::TimeSeries::TSClient.new(@ip, @port) }
 
-    it 'and should return an empty array for a query with no expected results' do
-      suggestions = subject.suggest('mtest')
-      expect(suggestions).to eq([])
-    end
-
-    it 'and should return data for a query with expected results' do
-      suggestions = subject.suggest('test1.test2')
-      expect(suggestions).to eq(['test1.test2'])
-    end
-  end
-
-  describe 'should support running queries in OpenTSDB 2.0' do
-    subject { Opower::TimeSeries::TSClient.new(@ip, @port) }
-
-    it 'should raise an error for a bad metric name' do
-      m = [{ metric: 'mtest' }]
-      config = { format: :json, start: 1421676714, finish: 1421676774, m: m }
-      query = Opower::TimeSeries::Query.new(config)
-
-      results = subject.run_query(query)
-      expect(results.errors?).to be_truthy
-      expect(results.error_message).to eq("No such name for 'metrics': 'mtest'")
-    end
-
-    it 'should raise an error for a bad tagk name ' do
-      m = [{ metric: 'test1.test2', tags: { bad_tagk: 'opentsdb.foo.com' } }]
-      config = { format: :json, start: 1421676714, finish: 1421676774, m: m }
-      query = Opower::TimeSeries::Query.new(config)
-
-      results = subject.run_query(query)
-      expect(results.errors?).to be_truthy
-      expect(results.error_message).to eq("No such name for 'tagk': 'bad_tagk'")
-    end
-
-    it 'should return data for a query in JSON format' do
-      m = [{ metric: 'cpu.load' }]
-      config = { format: :json, start: 1420676714, finish: 1420676774, m: m }
-      query = Opower::TimeSeries::Query.new(config)
-
-      results = subject.run_query(query).results
-      expect(results.length).not_to eq(0)
-      expect(results[0].fetch('dps')).to include('1420676750' => 1)
-    end
-  end
-
-  describe Opower::TimeSeries::TSClient do
-    describe 'should support running synthetic queries' do
-      subject { Opower::TimeSeries::TSClient.new(@ip, @port) }
-
-      it 'should compute a simple formula correctly' do
-        m = [{ metric: 'metric1' }]
-        config = { format: :json, start: 1421676000, finish: 1421676774, m: m }
-        query_one = Opower::TimeSeries::Query.new(config)
-
-        m = [{ metric: 'metric2' }]
-        config = { format: :json, start: 1421676000, finish: 1421676774, m: m }
-        query_two = Opower::TimeSeries::Query.new(config)
-
-        synthetic_results = subject.run_synthetic_query('test', 'x / y', x: query_one, y: query_two)
-        expect(synthetic_results.length).not_to eq(0)
+    context 'with no expected results' do
+      it 'returns an empty array' do
+        suggestions = subject.suggest('mtest')
+        expect(suggestions).to eq([])
       end
+    end
+
+    context 'with expected results' do
+      it 'returns data' do
+        suggestions = subject.suggest('test1.test2')
+        expect(suggestions).to eq(['test1.test2'])
+      end
+    end
+  end
+
+  describe '#run_query' do
+    subject { Opower::TimeSeries::TSClient.new(@ip, @port) }
+
+    context 'with bad input' do
+      it 'raises an error for a bad metric name' do
+        m = [{ metric: 'mtest' }]
+        config = { format: :json, start: 1421676714, finish: 1421676774, m: m }
+        query = Opower::TimeSeries::Query.new(config)
+
+        results = subject.run_query(query)
+        expect(results.errors?).to be_truthy
+        expect(results.error_message).to eq("No such name for 'metrics': 'mtest'")
+      end
+
+      it 'raises an error for a bad tagk name ' do
+        m = [{ metric: 'test1.test2', tags: { bad_tagk: 'opentsdb.foo.com' } }]
+        config = { format: :json, start: 1421676714, finish: 1421676774, m: m }
+        query = Opower::TimeSeries::Query.new(config)
+
+        results = subject.run_query(query)
+        expect(results.errors?).to be_truthy
+        expect(results.error_message).to eq("No such name for 'tagk': 'bad_tagk'")
+      end
+    end
+
+    context 'with valid input' do
+      it 'returns data' do
+        m = [{ metric: 'cpu.load' }]
+        config = { format: :json, start: 1420676714, finish: 1420676774, m: m }
+        query = Opower::TimeSeries::Query.new(config)
+
+        results = subject.run_query(query).results
+        expect(results.length).not_to eq(0)
+        expect(results[0].fetch('dps')).to include('1420676750' => 1)
+      end
+    end
+  end
+
+  describe '#run_synthetic_query' do
+    subject { Opower::TimeSeries::TSClient.new(@ip, @port) }
+
+    it 'computes a simple formula correctly' do
+      m = [{ metric: 'metric1' }]
+      config = { format: :json, start: 1421676000, finish: 1421676774, m: m }
+      query_one = Opower::TimeSeries::Query.new(config)
+
+      m = [{ metric: 'metric2' }]
+      config = { format: :json, start: 1421676000, finish: 1421676774, m: m }
+      query_two = Opower::TimeSeries::Query.new(config)
+
+      synthetic_results = subject.run_synthetic_query('test', 'x / y', x: query_one, y: query_two)
+      expect(synthetic_results.length).not_to eq(0)
     end
   end
 end
